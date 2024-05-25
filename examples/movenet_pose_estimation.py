@@ -32,7 +32,7 @@ def speech_recognition(queue):
     recognizer = sr.Recognizer()
     sense = SenseHat()
     # Setting up my API Key
-    genai.configure(api_key='AIzaSyCSaKG2iGOTU_3SyaV1ujclVdlVHdkZyt0')
+    genai.configure(api_key='Enter Your Own Key Here')
  
     # Select the AI model
     model = genai.GenerativeModel('gemini-pro')
