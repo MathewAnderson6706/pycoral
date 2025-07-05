@@ -1,59 +1,123 @@
-# PyCoral API
+# AI-Powered Fitness Tracker
 
-This repository contains an easy-to-use Python API that helps you run inferences
-and perform on-device transfer learning with TensorFlow Lite models on
-[Coral devices](https://coral.ai/products/).
+*Fork of Google's PyCoral library, enhanced with custom fitness tracking application*
 
-To install the prebuilt PyCoral library, see the instructions at
-[coral.ai/software/](https://coral.ai/software/#pycoral-api).
+## Overview
 
-**Note:** If you're on a Debian system, be sure to install this library from
-apt-get and not from pip. Using `pip install` is not guaranteed compatible with
-the other Coral libraries that you must install from apt-get. For details, see
-[coral.ai/software/](https://coral.ai/software/#debian-packages).
+This project transforms a Raspberry Pi into an intelligent fitness monitoring system that combines computer vision, voice recognition, and environmental sensing. Built on top of Google's PyCoral library, it demonstrates practical edge AI implementation with real-time pose detection and multimodal interaction.
 
-## Documentation and examples
+## Key Features
 
-To learn more about how to use the PyCoral API, see our guide to [Run inference
-on the Edge TPU with Python](https://coral.ai/docs/edgetpu/tflite-python/) and
-check out the [PyCoral API reference](https://coral.ai/docs/reference/py/).
+- **Real-time Exercise Counting**: Automatically tracks bicep curls and knee raises using pose detection
+- **Voice Control**: Accepts spoken commands for counter reset and environmental queries
+- **Performance Optimized**: Achieves 30fps pose detection using Coral Edge TPU (3x improvement over CPU-only)
+- **Environmental Monitoring**: Displays temperature and humidity on demand
+- **Gesture Controls**: Exit system by bringing wrists together
+- **Visual Feedback**: LED matrix displays for exercise counts and environmental data
 
-Several Python examples are available in the `examples/` directory. For
-instructions, see the [examples README](
-https://github.com/google-coral/pycoral/tree/master/examples#pycoral-api-examples).
+## Hardware Requirements
 
+- Raspberry Pi 4
+- Coral USB Accelerator (Edge TPU)
+- Pi Camera Module
+- Sense HAT
+- Microphone (for voice commands)
 
-## Compilation
+## Technical Implementation
 
-When building this library yourself, it's critical that you have
-version-matching builds of
-[libcoral](https://github.com/google-coral/libcoral/tree/master) and
-[libedgetpu](https://github.com/google-coral/libedgetpu/tree/master)—notice
-these are submodules of the pycoral repo, and they all share the same
-`TENSORFLOW_COMMIT` value. So just be sure if you change one, you must change
-them all.
+### Pose Detection & Exercise Counting
+- Uses Google's MoveNet model optimized for Coral Edge TPU
+- Tracks 17 keypoints for accurate body pose estimation
+- Calculates joint angles to determine exercise completion
+- Implements state tracking to prevent double-counting
 
-For complete details about how to build all these libraries, read
-[Build Coral for your platform](https://coral.ai/docs/notes/build-coral/).
-Or to build just this library, follow these steps:
+### Voice Recognition System
+- Continuous speech recognition using Google Speech API
+- Google Gemini AI for natural language intent classification
+- Multiprocessing architecture prevents blocking of main video loop
+- Supports commands: reset counter, temperature check, humidity check
 
-1.  Clone this repo and include submodules:
+### Performance Metrics
+- **30fps** real-time pose detection with Coral Edge TPU
+- **10fps** baseline performance with CPU-only processing
+- **3x performance improvement** through hardware acceleration
 
-    ```
-    git clone --recurse-submodules https://github.com/google-coral/pycoral
-    ```
+## Installation
 
-    If you already cloned without the submodules. You can add them with this:
+1. **Install PyCoral Library**
+   ```bash
+   # On Debian systems (recommended)
+   sudo apt-get install python3-pycoral
+   
+   # Or follow instructions at coral.ai/software/
+   ```
 
-    ```
-    cd pycoral
+2. **Install Additional Dependencies**
+   ```bash
+   pip3 install opencv-python pillow numpy sense-hat speechrecognition google-generativeai
+   ```
 
-    git submodule init && git submodule update
-    ```
+3. **Setup Hardware**
+   - Connect Coral USB Accelerator
+   - Attach Pi Camera Module
+   - Install Sense HAT on GPIO pins
 
-1.  Run `scripts/build.sh` to build pybind11-based native layer for different
-    Linux architectures. Build is Docker-based, so you need to have it
-    installed.
+4. **Configure API Keys**
+   - Add your Google Generative AI API key to the script
+   - Ensure microphone permissions are configured
 
-1.  Run `make wheel` to generate Python library wheel and then `pip3 install
-    $(ls dist/*.whl)` to install it
+## Usage
+
+```bash
+python3 fitness_tracker.py
+```
+
+### Voice Commands
+- "Start over" / "Restart" → Reset exercise counters
+- "How hot is it?" → Display temperature
+- "What's the humidity?" → Display humidity levels
+
+### Exercise Detection
+- **Bicep Curls**: Monitors right arm elbow angle (red LED display)
+- **Knee Raises**: Tracks right ankle above left knee (green LED display)
+- **Exit**: Bring both wrists close together
+
+## Project Structure
+
+```
+fitness_tracker.py          # Main application
+test_data/                  # MoveNet model files
+├── movenet_single_pose_lightning_ptq_edgetpu.tflite
+```
+
+## Technical Architecture
+
+- **Main Process**: Handles video capture, pose detection, and exercise counting
+- **Speech Process**: Runs continuous voice recognition in parallel
+- **Queue Communication**: Thread-safe data exchange between processes
+- **State Management**: Prevents false positives in exercise counting
+
+## Performance Optimization
+
+The implementation showcases several optimization techniques:
+- **Hardware Acceleration**: Coral Edge TPU for 3x faster inference
+- **Efficient Processing**: Multiprocessing prevents audio blocking video
+- **Memory Management**: Proper tensor handling and cleanup
+- **Real-time Constraints**: Maintains 30fps for smooth user experience
+
+## Original PyCoral Library
+
+This project is built upon Google's PyCoral library. For the original documentation and examples, see:
+- [PyCoral API Documentation](https://coral.ai/docs/reference/py/)
+- [Edge TPU Python Guide](https://coral.ai/docs/edgetpu/tflite-python/)
+- [Original Examples](https://github.com/google-coral/pycoral/tree/master/examples)
+
+## License
+
+This project maintains the same license as the original PyCoral library. See LICENSE file for details.
+
+## Acknowledgments
+
+- Google Coral team for the PyCoral library and Edge TPU optimization
+- Google for MoveNet pose detection model
+- Raspberry Pi Foundation for accessible edge computing platform
